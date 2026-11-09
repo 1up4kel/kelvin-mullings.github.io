@@ -33,6 +33,12 @@
   .status.done { background:#14532d; color:#86efac; }
   .status.doing { background:#713f12; color:#fde68a; }
   .status.planned { background:#1e293b; color:var(--muted); border:1px solid #334155; }
+  .lab { margin-bottom:24px; }
+  .lab:last-child { margin-bottom:0; }
+  .lab h3 { margin:0; }
+  .lab .meta { color:var(--muted); font-size:.95rem; margin:2px 0 8px; }
+  pre { background:#0f172a; border:1px solid #334155; border-radius:8px; padding:12px 16px; overflow-x:auto; font-size:.85rem; line-height:1.5; margin:10px 0; }
+  code { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
   footer { color:var(--muted); font-size:.9rem; margin-top:32px; }
   a { color:var(--accent); }
 </style>
@@ -92,6 +98,118 @@
       <p class="meta">Across roles</p>
       <p>Structured troubleshooting of Layer 2, Layer 3, BGP, Nexus, vPC, firewall, and end-to-end connectivity issues using packet capture and network health monitoring, with root-cause analysis and change execution.</p>
       <ul class="chips"><li>Wireshark</li><li>SolarWinds</li><li>Splunk</li><li>ServiceNow</li></ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>Packet Tracer labs — guides</h2>
+    <p>Step-by-step labs to build in Cisco Packet Tracer, drawn from the technologies I work with daily. Each guide gives the topology, the goal, the key configuration, and how to verify it. .pkt files get added here as they are built.</p>
+
+    <div class="lab">
+      <h3>Lab 1 — VLANs, trunking &amp; STP <span class="status doing">Guide</span></h3>
+      <p class="meta">Packet Tracer &middot; 2 switches, 4 PCs &middot; VLANs 10 &amp; 20</p>
+      <p><strong>Goal:</strong> Segment two departments into VLANs, carry both across a trunk, and confirm STP picks a loop-free path.</p>
+      <pre><code>S1(config)# vlan 10
+S1(config-vlan)# name SALES
+S1(config)# vlan 20
+S1(config-vlan)# name ENGINEERING
+S1(config)# interface range f0/1-2
+S1(config-if-range)# switchport mode access
+S1(config-if-range)# switchport access vlan 10
+S1(config)# interface g0/1
+S1(config-if)# switchport mode trunk</code></pre>
+      <p><strong>Verify:</strong> <code>show vlan brief</code> &middot; <code>show interfaces trunk</code> &middot; <code>show spanning-tree vlan 10</code></p>
+    </div>
+
+    <div class="lab">
+      <h3>Lab 2 — Inter-VLAN routing (router-on-a-stick) <span class="status doing">Guide</span></h3>
+      <p class="meta">Packet Tracer &middot; 1 router, 1 switch &middot; VLANs 10 &amp; 20</p>
+      <p><strong>Goal:</strong> Route between VLANs over a single trunk link using router subinterfaces.</p>
+      <pre><code>R1(config)# interface g0/0.10
+R1(config-subif)# encapsulation dot1Q 10
+R1(config-subif)# ip address 192.168.10.1 255.255.255.0
+R1(config)# interface g0/0.20
+R1(config-subif)# encapsulation dot1Q 20
+R1(config-subif)# ip address 192.168.20.1 255.255.255.0</code></pre>
+      <p><strong>Verify:</strong> Ping from a VLAN 10 PC to a VLAN 20 PC &middot; <code>show ip route</code> on R1</p>
+    </div>
+
+    <div class="lab">
+      <h3>Lab 3 — OSPF multi-area <span class="status doing">Guide</span></h3>
+      <p class="meta">Packet Tracer &middot; 3 routers &middot; Areas 0 &amp; 1</p>
+      <p><strong>Goal:</strong> Build an OSPF domain with a backbone area and a second area, and confirm routes propagate across the ABR.</p>
+      <pre><code>R1(config)# router ospf 1
+R1(config-router)# network 10.0.0.0 0.255.255.255 area 0
+R1(config-router)# network 10.0.1.0 0.0.0.255 area 0
+R2(config)# router ospf 1
+R2(config-router)# network 10.0.1.0 0.0.0.255 area 0
+R2(config-router)# network 10.0.2.0 0.0.0.255 area 1</code></pre>
+      <p><strong>Verify:</strong> <code>show ip ospf neighbor</code> &middot; <code>show ip route ospf</code> &middot; <code>show ip ospf database</code></p>
+    </div>
+
+    <div class="lab">
+      <h3>Lab 4 — eBGP peering <span class="status doing">Guide</span></h3>
+      <p class="meta">Packet Tracer &middot; 2 routers, 2 autonomous systems</p>
+      <p><strong>Goal:</strong> Peer two autonomous systems with eBGP and exchange a prefix between them.</p>
+      <pre><code>R1(config)# router bgp 65001
+R1(config-router)# neighbor 203.0.113.2 remote-as 65002
+R1(config-router)# network 192.168.10.0 mask 255.255.255.0
+R2(config)# router bgp 65002
+R2(config-router)# neighbor 203.0.113.1 remote-as 65001</code></pre>
+      <p><strong>Verify:</strong> <code>show ip bgp summary</code> &middot; <code>show ip bgp</code> &middot; <code>show ip route bgp</code></p>
+    </div>
+
+    <div class="lab">
+      <h3>Lab 5 — Extended ACLs <span class="status doing">Guide</span></h3>
+      <p class="meta">Packet Tracer &middot; 1 router, 2 VLANs</p>
+      <p><strong>Goal:</strong> Block guest VLAN traffic from reaching the sales VLAN while permitting everything else.</p>
+      <pre><code>R1(config)# ip access-list extended BLOCK-GUEST
+R1(config-ext-nacl)# deny ip 192.168.30.0 0.0.0.255 192.168.10.0 0.0.0.255
+R1(config-ext-nacl)# permit ip any any
+R1(config)# interface g0/0.30
+R1(config-subif)# ip access-group BLOCK-GUEST in</code></pre>
+      <p><strong>Verify:</strong> Ping from guest to sales fails, guest to internet works &middot; <code>show access-lists</code></p>
+    </div>
+
+    <div class="lab">
+      <h3>Lab 6 — NAT / PAT overload <span class="status doing">Guide</span></h3>
+      <p class="meta">Packet Tracer &middot; 1 router, LAN + internet edge</p>
+      <p><strong>Goal:</strong> Give a private LAN internet access with PAT overload on the edge interface.</p>
+      <pre><code>R1(config)# access-list 1 permit 192.168.10.0 0.0.0.255
+R1(config)# ip nat inside source list 1 interface g0/1 overload
+R1(config)# interface g0/0
+R1(config-if)# ip nat inside
+R1(config)# interface g0/1
+R1(config-if)# ip nat outside</code></pre>
+      <p><strong>Verify:</strong> Ping a public address from a LAN PC &middot; <code>show ip nat translations</code></p>
+    </div>
+
+    <div class="lab">
+      <h3>Lab 7 — DHCP server on the router <span class="status doing">Guide</span></h3>
+      <p class="meta">Packet Tracer &middot; 1 router, LAN clients</p>
+      <p><strong>Goal:</strong> Serve addresses, gateway, and DNS to a LAN from the router, with the gateway excluded from the pool.</p>
+      <pre><code>R1(config)# ip dhcp excluded-address 192.168.10.1 192.168.10.10
+R1(config)# ip dhcp pool LAN10
+R1(dhcp-config)# network 192.168.10.0 255.255.255.0
+R1(dhcp-config)# default-router 192.168.10.1
+R1(dhcp-config)# dns-server 8.8.8.8</code></pre>
+      <p><strong>Verify:</strong> Set a PC to DHCP and confirm it receives an address &middot; <code>show ip dhcp binding</code></p>
+    </div>
+
+    <div class="lab">
+      <h3>Lab 8 — 802.1X port authentication with RADIUS <span class="status doing">Guide</span></h3>
+      <p class="meta">Packet Tracer &middot; 1 switch, RADIUS server &middot; AAA / 802.1X</p>
+      <p><strong>Goal:</strong> Require authentication before a switch port forwards traffic, backed by a RADIUS server.</p>
+      <pre><code>S1(config)# aaa new-model
+S1(config)# radius server RADIUS-1
+S1(config-radius-server)# address ipv4 192.168.10.50 auth-port 1812 acct-port 1813
+S1(config-radius-server)# key cisco123
+S1(config)# aaa authentication dot1x default group radius
+S1(config)# interface f0/1
+S1(config-if)# authentication port-control auto
+S1(config-if)# dot1x pae authenticator</code></pre>
+      <p><strong>Verify:</strong> <code>show authentication sessions</code> &middot; <code>show dot1x all</code></p>
+      <p><em>Note: Packet Tracer models 802.1X in a limited way — good for learning the flow, not a replacement for a real ISE deployment.</em></p>
     </div>
   </section>
 
