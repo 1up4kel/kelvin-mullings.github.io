@@ -102,8 +102,17 @@
   </section>
 
   <section>
-    <h2>Packet Tracer labs — guides</h2>
+    <h2 id="packet-tracer-labs">Packet Tracer labs</h2>
     <p>Step-by-step labs to build in Cisco Packet Tracer, drawn from the technologies I work with daily. Each guide gives the topology, the goal, the key configuration, and how to verify it. .pkt files get added here as they are built.</p>
+
+    <div class="lab" id="static-routing">
+      <h3>Static Routing Between HQ, Branch, and Data Center <span class="status done">Download available</span></h3>
+      <p class="meta">Packet Tracer &middot; 3 Cisco 2911 routers, 2 PCs &middot; Static routing</p>
+      <p><strong>Goal:</strong> Connect HQ and Branch LANs across serial WAN links and reach a simulated data center on R3&rsquo;s loopback interface.</p>
+      <ul class="chips"><li>IPv4 addressing</li><li>Serial WAN</li><li>Static routes</li><li>Loopback interfaces</li><li>Connectivity troubleshooting</li></ul>
+      <p><a href="labs/static-routing/Static_Routing_v2.pkt" download>Download Packet Tracer lab (.pkt)</a> &middot; <a href="https://github.com/1up4kel/kelvin-mullings.github.io/tree/main/labs/static-routing">Read topology and verification guide</a></p>
+      <p><strong>Verify:</strong> <code>show ip interface brief</code> &middot; <code>show ip route</code> &middot; PC-to-PC ping &middot; Ping <code>203.0.113.1</code></p>
+    </div>
 
     <div class="lab">
       <h3>Lab 1 — VLANs, trunking &amp; STP <span class="status doing">Guide</span></h3>
